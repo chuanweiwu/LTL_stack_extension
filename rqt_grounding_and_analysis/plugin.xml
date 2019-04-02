@@ -1,0 +1,22 @@
+<library path="src">
+  <class name="Proposition Mapping and Analysis Plugin" type="rqt_grounding_and_analysis.mapping_and_analysis_module.PropMappingAndAnalysis" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      This is a Python GUI plugin to:
+      (1) Create mapping between propositions and nodes; and
+      (2) Analyze if there will be low-level access problems among propositions
+    </description>
+    <qtgui>
+      <!-- optional grouping...
+      <group>
+        <label>Group</label>
+      </group>
+      <group>
+        <label>Subgroup</label>
+      </group>
+      -->
+      <label>Proposition Mapping and Analysis Plugin</label>
+      <icon type="theme">system-help</icon>
+      <statustip>Python GUI plugin for proposition mapping and analysis</statustip>
+    </qtgui>
+  </class>
+</library>
