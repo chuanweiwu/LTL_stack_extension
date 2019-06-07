@@ -50,7 +50,7 @@ class InputManager(object):
     def subscribe_to_topics(self, prop_to_ros_info):
         for prop, prop_info in prop_to_ros_info.iteritems():
             self._input_readings[prop] = False
-            rospy.Subscriber(prop_info['node_publish_topic'], std_msgs.msg.Bool, callback=self.update_value, callback_args=prop)
+            rospy.Subscriber(prop_info['node_publish_topic'], std_msgs.msg.Bool, callback=self.update_value, callback_args=prop, queue_size=1, buff_size=70000)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Input Manager")

@@ -115,9 +115,9 @@ class ControllerExecutor(object):
         else:
             ## Pause everything ##
             # Stop robot
-            zero_vel_obj = geometry_msgs.msg.Twist()
-            controller_logger.debug('Stopping robot...')
-            self.vel_pub.publish(zero_vel_obj)
+            zero_vel_obj = geometry_msgs.msg.Twist()#chuanwei
+            controller_logger.debug('Stopping robot...')#chuanwei
+            self.vel_pub.publish(zero_vel_obj)#chuanwei
 
             # cancel actions
             self._move_base_cancel_pub.publish(actionlib_msgs.msg.GoalID())
