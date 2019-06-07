@@ -348,6 +348,7 @@ class SlugsExecutorBase(object):
             if "error" in stdout.lower():
                 slugs_logger.error("No next state! Incoming inputs: {inputs}\n stdout: {stdout}"\
                     .format(inputs=trans_inputs, stdout=stdout))
+                #slugs_logger.info (str(self._current_state))#chuanwei
                 return ""
             #slugs_logger.log(2, stdout)
             slugs_logger.log(2, "Transition to: {current_state}".format(current_state=stdout.replace(">","").strip().partition(",")[0]))
