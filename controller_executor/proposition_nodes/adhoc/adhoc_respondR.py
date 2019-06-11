@@ -11,7 +11,7 @@ import time
 from std_msgs.msg import Bool
 import sys
 #sys.path.insert(0,'/ad_hoc')
-from ad_hoc.ad_hoc_robot_controller import *
+from ad_hoc_robot_controller import *
 
 
 if __name__ == "__main__":
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 		#print(cropped.shape)
 		resized = resize(cropped, (100, 100), mode='constant')
 		flattened = resized.flatten()
-		return grayframe, flattened[np.newaxis, :]
+		return cropped, flattened[np.newaxis, :]
 	# Start robot mind
 	robot = Robotmind('touch.joblib')
 

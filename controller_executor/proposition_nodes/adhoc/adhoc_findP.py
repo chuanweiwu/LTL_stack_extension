@@ -17,23 +17,7 @@ from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist
 import numpy as np
 import cvxopt
-import json
-import socket
 
-def sendObject(message):
-    # local host IP '127.0.0.1'
-    host = '10.148.8.230'
-
-    # Define the port on which you want to connect
-    port = 65432
-
-    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-
-    # connect to server on local computer
-    s.connect((host,port))
-
-    s.send(json.dumps(message).encode() )
-    s.close()
 
 class robotObj(object):
 	def __init__(self, pose, alphaR, l):
@@ -221,7 +205,7 @@ class ViconTracker(object):
 		self.thread_person = threading.Thread(target=self.updatePose_person)
 		self.thread_person.daemon = True
 		self.thread_person.start()
-		self.target_robot = 'vicon/HSIbot/HSIbot'
+		self.target_robot = 'vicon/jackal3NEW/jackal3NEW'
 		self.robot_x = 0
 		self.robot_y = 0
 		self.robot_z = 0
@@ -254,8 +238,7 @@ class ViconTracker(object):
 		self.robot_x = a[0][0]
 		self.robot_y = a[0][1]
 		euler = tf.transformations.euler_from_quaternion(a[1])
-		# calibrate the orientation 
-		self.robot_z = euler[2]-0.8
+		self.robot_z = euler[2]
 		robot_Xx = self.robot_x
 		robot_Yy = self.robot_y
 		robot_Zz = self.robot_z
@@ -291,11 +274,11 @@ if __name__ == '__main__':
 	# The initial position of the ROBOT
 	# initPose = np.array([[-2.0], [-.1],[np.pi]])
 
-	#poseInformation[5]=poseInformation[5]-2.3
+	poseInformation[5]=poseInformation[5]-2.3
 	if (poseInformation[5]<-np.pi):
 		poseInformation[5]= abs(poseInformation[5] + np.pi)
 	initPose = np.array([[poseInformation[3]],[poseInformation[4]],[poseInformation[5]]])
-	#print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+
 
 	# The initial position of the PERSON
 	# initPoseP = np.array([[1.], [0.]])
@@ -306,7 +289,7 @@ if __name__ == '__main__':
 	# Max speed of person
 	alphaP = 2
 	# Radius of bubble surrounding person
-	r = 0.3
+	r = 0.1
 	# gaze of person
 	gaze = poseInformation[2] # np.pi
 
@@ -364,146 +347,98 @@ if __name__ == '__main__':
 	vel_msg.angular.z = 0
 	a = ViconTracker()
 	#result=	True
+	while not rospy.is_shutdown():
+		while (temp.request_data):
+			for i in range(0,k_max-1):
+                # Update states of robot
+				poseR = a.updatePose_robot()
+				#poseR[2] = poseR[2] - 2.3
+				poseR[2] = poseR[2] +1.45
+				robotAngle = (poseR[2] + np.pi) % (2 * np.pi ) - np.pi
+				#if robotAngle > 0:
+				#	robotAngle = robotAngle - 2.3
+				#else:
+				#	robotAngle = robotAngle + 2.3
 
-	#tcp = TCP()
-	#tcp.getIP()
+				poseR[2] = robotAngle
+				poseRx[i+1] = poseR[0]
+				poseRy[i+1] = poseR[1]
+				thetaR[i+1] = poseR[2]
 
-	# host = tcp.server_address
-	count = 5
-	try:
-		while not rospy.is_shutdown():
-			while count>0:#(temp.request_data):
-				for i in range(0,k_max-1):
-		            # Update states of robot
-					poseR = a.updatePose_robot()
-					poseR[2] = poseR[2]
-					robotAngle = (poseR[2] + np.pi) % (2 * np.pi ) - np.pi
-					#if robotAngle > 0:
-					#	robotAngle = robotAngle - 2.3
-					#else:
-					#	robotAngle = robotAngle + 2.3
-
-					poseR[2] = robotAngle
-					poseRx[i+1] = poseR[0]
-					poseRy[i+1] = poseR[1]
-					thetaR[i+1] = poseR[2]
-
-					#print(robotAngle)
+				#print(robotAngle)
 
 
-				    # Update state of person
-					poseP = a.updatePose_person()
-					posePx[i+1] = poseP[0]
-					posePy[i+1] = poseP[1]
+		        # Update state of person
+				poseP = a.updatePose_person()
+				posePx[i+1] = poseP[0]
+				posePy[i+1] = poseP[1]
 
-					#PoseP[0] and poseP[1] represents the location of the person viewed as an 					obstacle
-					#State of gaze
-					goalx[i+1] = poseP[2]
-					goaly[i+1] = poseP[3]
-					#PoseP[2] and poseP[3] represents the GOAL location. change this to change where 					the robot wants to go
+				#PoseP[0] and poseP[1] represents the location of the person viewed as an 					obstacle 
+				#State of gaze
+				goalx[i+1] = poseP[2]
+				goaly[i+1] = poseP[3]
+				#PoseP[2] and poseP[3] represents the GOAL location. change this to change where 					the robot wants to go
 
-					# Calculate Barrier Function
-					h[i] = robot.barrier(poseR, poseP, r)
+				# Calculate Barrier Function
+				h[i] = robot.barrier(poseR, poseP, r)
 
-					# Get commands for the person
-					uP[i+1, :] = person.getCommandP(poseP[0], poseP[1], posePG[0], posePG[1], alphaP)
+				# Get commands for the person
+				uP[i+1, :] = person.getCommandP(poseP[0], poseP[1], posePG[0], posePG[1], alphaP)
 
-					# Get commands for the robot. will be in the form vx and vy
-					uR[i+1, :] = robot.getCommandR(poseR[0], poseR[1], poseP[2], poseP[3], poseP[0], poseP[1], alphaR, alphaP, gamma, h[i], uR[i,:])
-					# change commands into velocity and omega
-					sendVx = float(uR[i+1, 0])
-					sendVy = float(uR[i+1, 1])
-					# poseR[2] = poseR[2] - 0.81997077 - np.pi/2
-					#print(poseR[2])
-					commands = robot.feedbackLin(uR[i+1,0], uR[i+1,1], poseR[2], epsilon)
-					v[i+1] = commands[0]
-					omega[i+1] = commands[1]
+				# Get commands for the robot. will be in the form vx and vy
+				uR[i+1, :] = robot.getCommandR(poseR[0], poseR[1], poseP[2], poseP[3], poseP[0], poseP[1], alphaR, alphaP, gamma, h[i], uR[i,:])
+				# change commands into velocity and omega
+				sendVx = float(uR[i+1, 0])
+				sendVy = float(uR[i+1, 1])
+				# poseR[2] = poseR[2] - 0.81997077 - np.pi/2
+				#print(poseR[2])
+				commands = robot.feedbackLin(uR[i+1,0], uR[i+1,1], poseR[2], epsilon)
+				v[i+1] = commands[0]
+				omega[i+1] = commands[1]
 
+				
+				# print(commands)
+				print(poseR)
+				linear_velocity = float(commands[0])
+				angular_velocity = float(commands[1])
+				# print(poseR[0],poseR[1])
+				# vel_msg.linear.x = sendVx
+				# vel_msg.linear.y = sendVy
 
-					# print(commands)
-					#print(poseR)
-					linear_velocity = float(commands[0])
-					angular_velocity = float(commands[1])
-					# print(poseR[0],poseR[1])
-					# vel_msg.linear.x = sendVx
-					# vel_msg.linear.y = sendVy
+				xerror = poseP[2] - poseR[0]
+				yerror = poseP[3] - poseR[1]
+				dist2goal = np.sqrt([xerror ** 2 + yerror ** 2])
+				
+				#print (poseP)
+				#print dist2goal
+				if dist2goal < .18:
+					#align with person
+					# desired orientation of aligning
+					theta_d = np.arctan2((poseP[1] - poseR[1]),(poseP[0]-poseR[0]))
+					#robotAngle = (poseR[2] + np.pi) % (2 * np.pi ) - np.pi
+					theta_e = theta_d - robotAngle										
+					linear_velocity = float(0)
+					angular_velocity = float(k_omega*theta_e)
+					if theta_e < .15:
+						print('alignment complete')
+					else: 
+						print('trying to align')
+						
 
-					xerror = poseP[2] - poseR[0]
-					yerror = poseP[3] - poseR[1]
-					dist2goal = np.sqrt([xerror ** 2 + yerror ** 2])
-
-					#print dist2goal
-					if dist2goal < .2:
-						#align with person
-						# desired orientation of aligning
-						theta_d = np.arctan2((poseP[1] - poseR[1]),(poseP[0]-poseR[0]))
-						#robotAngle = (poseR[2] + np.pi) % (2 * np.pi ) - np.pi
-						theta_e = theta_d - robotAngle
-						linear_velocity = float(0)
-						angular_velocity = float(k_omega*theta_e)
-						if theta_e < .1:
-							print('alignment complete')
-						else:
-							print('trying to align')
-
-
-					vel_msg.linear.x = linear_velocity
-					vel_msg.angular.z = angular_velocity
-					#print(angular_velocity)
-					#t0 = rospy.Time.now().to_sec()
-					#t1 = t0
-					#pub.publish(vel_msg)
-					R = commands[0] / commands[1]
-
-					vR = commands[1] * (R + l/2)
-					vL = commands[1] * (R - l/2)
-
-
+				vel_msg.linear.x = linear_velocity
+				vel_msg.angular.z = angular_velocity
+				#print(angular_velocity)
+				#t0 = rospy.Time.now().to_sec()
+				#t1 = t0
+								
+				
+				pub.publish(vel_msg)
+				
 
 
-					vR = int((600/alphaR)*vR)
-					vL = int((-1*600/alphaR)*vL)
-
-					if abs(vR + vL) > 300:
-						vR = 3*vR
-						vL = 3*vL
-						print('triple')
-
-					if abs(vR) > 1300:
-						vR = np.sign(vR)*1300
-					if abs(vL) > 1300:
-						vL = np.sign(vL)*1300
-
-					print(vR)
-					print(-1*vL)
-
-					_send_setspeed_object = {
-					"id" : int(time.time()),
-					"cmd" : "SetSpeedCommand", #Command name
-					"priority" : 1,#, Priority, type int
-					"leftSpeed" : vL, ## Left speed value, type int
-					"rightSpeed" : vR, ## Right speed value, type int
-					"receivingPort" : 12346
-					}
-
-					sendObject(_send_setspeed_object)
-					time.sleep(0.4)
-				count -= 1
-
-	finally:
-		print('interrupted')
-		_send_setspeed_object = {
-		"id" : int(time.time()),
-		"cmd" : "SetSpeedCommand", #Command name
-		"priority" : 1,#, Priority, type int
-		"leftSpeed" : 0, ## Left speed value, type int
-		"rightSpeed" : 0, ## Right speed value, type int
-		"receivingPort" : 12346
-		}
-		sendObject(_send_setspeed_object)
 
 				#rate.sleep()
-
+		
 				#while t1 - t0 < T:
 				#	t1 = rospy.Time.now().to_sec()
 				#	pub.publish(vel_msg)

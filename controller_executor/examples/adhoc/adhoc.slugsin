@@ -3,13 +3,13 @@ PNext
 RNext
 respondR
 seeP
-flagRespond
 
 
 [OUTPUT]
 drawAttention
 moveToNext
 findP
+flagRespond
 
 
 [ENV_TRANS]
@@ -17,11 +17,8 @@ findP
 | ! PNext PNext'
 | ! ! PNext ! RNext'
 
-| ! ! seeP ! respondR'
-| ! respondR seeP'
-| ! & ! flagRespond ! respondR ! flagRespond'
-| ! & ! flagRespond respondR flagRespond'
-| ! flagRespond flagRespond'
+#!seeP -> !respondR'
+#respondR -> seeP'
 
 
 
@@ -30,7 +27,6 @@ findP
 ! RNext
 ! respondR
 ! seeP
-! flagRespond
 
 
 [SYS_TRANS]
@@ -41,6 +37,10 @@ findP
 | ! ! PNext ! moveToNext'
 ! & drawAttention moveToNext
 
+| ! & ! flagRespond ! respondR ! flagRespond'
+| ! & ! flagRespond respondR flagRespond'
+| ! flagRespond flagRespond'
+
 
 #LIVENESS
 
@@ -48,6 +48,7 @@ findP
 ! drawAttention
 ! moveToNext
 ! findP
+! flagRespond
 
 #TRANS
 

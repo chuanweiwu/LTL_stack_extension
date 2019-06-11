@@ -34,7 +34,7 @@ class ViconTracker(object):
 		self.thread_person = threading.Thread(target=self.updatePose_person)
 		self.thread_person.daemon = True
 		self.thread_person.start()
-		self.target_robot = 'vicon/HSIbot/HSIbot'
+		self.target_robot = 'vicon/jackal3NEW/jackal3NEW'
 		self.robot_x = 0
 		self.robot_y = 0
 		self.robot_z = 0
@@ -60,7 +60,7 @@ class ViconTracker(object):
 		self.robot_x = a[0][0]
 		self.robot_y = a[0][1]
 		euler = tf.transformations.euler_from_quaternion(a[1])
-		self.robot_z = euler[2]-0.8
+		self.robot_z = euler[2]
 		robot_Xx = self.robot_x
 		robot_Yy = self.robot_y
 		robot_Zz = self.robot_z
@@ -86,12 +86,15 @@ class ViconTracker(object):
 		result = 0
 		data = self.getPose()
 		self.poseR = data[3:6]
-		self.poseR[2] = self.poseR[2]
+		self.poseR[2] = self.poseR[2] + 1.45
 		robotAngle = (self.poseR[2] + np.pi) % (2 * np.pi ) - np.pi
 		self.poseP[0] = data[0]
 		self.poseP[1] = data[1]
 		self.poseP[2] = self.poseP[0] + 0.75*np.cos(data[2]) # ??? Goal destination at beginning
 		self.poseP[3] = self.poseP[1] + 0.75*np.sin(data[2])
+
+		#print(self.poseP)
+
 		xerror = self.poseP[2] - self.poseR[0]
 		yerror = self.poseP[3] - self.poseR[1]
 		dist2goal = np.sqrt([xerror ** 2 + yerror ** 2])
@@ -101,12 +104,16 @@ class ViconTracker(object):
 			theta_d = np.arctan2((self.poseP[1] - self.poseR[1]),(self.poseP[0]-self.poseR[0]))
 			#robotAngle = (poseR[2] + np.pi) % (2 * np.pi ) - np.pi
 			theta_e = theta_d - robotAngle
-			if theta_e < .1:
+			if theta_e < .15:
 				result = 1
+				#print ('111111111111111111111111111111')
+			else:
+				result = 0
+				#print (result)
+		
 		return result										
 		
 if __name__ == "__main__":
-	#rospy.init_node('Hexbug_listener')
 	rospy.init_node('seeP')
 	pub = rospy.Publisher('/adhoc/inputs/seeP',Bool,queue_size=10)
 	rate = rospy.Rate(10)
@@ -119,4 +126,3 @@ if __name__ == "__main__":
 		#print(a.calc() == 1)
 		pub.publish(a.calc() == 1)
 		#print a.calc()
-		#time.sleep()

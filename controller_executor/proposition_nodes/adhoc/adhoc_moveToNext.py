@@ -17,9 +17,6 @@ from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist
 import numpy as np
 import cvxopt
-import json
-import socket
-from adhoc_findP import sendObject
 
 
 class robotObj(object):
@@ -208,7 +205,7 @@ class ViconTracker(object):
 		self.thread_person = threading.Thread(target=self.updatePose_person)
 		self.thread_person.daemon = True
 		self.thread_person.start()
-		self.target_robot = 'vicon/HSIbot/HSIbot'
+		self.target_robot = 'vicon/jackal3NEW/jackal3NEW'
 		self.robot_x = 0
 		self.robot_y = 0
 		self.robot_z = 0
@@ -355,7 +352,7 @@ if __name__ == '__main__':
 			for i in range(0,k_max-1):
                 # Update states of robot
 				poseR = a.updatePose_robot()
-				poseR[2] = poseR[2]
+				poseR[2] = poseR[2] +1.45
 				robotAngle = (poseR[2] + np.pi) % (2 * np.pi ) - np.pi
 				#if robotAngle > 0:
 				#	robotAngle = robotAngle - 2.3
@@ -434,36 +431,7 @@ if __name__ == '__main__':
 				#print(angular_velocity)
 				#t0 = rospy.Time.now().to_sec()
 				#t1 = t0
-				#pub.publish(vel_msg)
-				R = commands[0] / commands[1]
-
-				vR = int(commands[1] * (R + l/2))
-				vL = int(commands[1] * (R - l/2))
-				
-				vR = int((600/alphaR)*vR)
-				vL = int((-1*600/alphaR)*vL)
-
-				if abs(vR + vL) > 300:
-					vR = 3*vR
-					vL = 3*vL
-					print('triple')
-
-				if abs(vR) > 1300:
-					vR = np.sign(vR)*1300
-				if abs(vL) > 1300:
-					vL = np.sign(vL)*1300
-
-				_send_setspeed_obejct = {
-				"id" : int(time.time()),
-				"cmd" : "SetSpeedCommand", #Command name
-				"priority" : 1,#, Priority, type int
-				"leftSpeed" : vL, ## Left speed value, type int
-				"rightSpeed" : vR, ## Right speed value, type int
-    			"receivingPort" : 12346
-				}
-	
-				sendObject(_send_setspeed_object)
-				time.sleep(0.4)
+				pub.publish(vel_msg)
 				#rate.sleep()
 		
 				#while t1 - t0 < T:

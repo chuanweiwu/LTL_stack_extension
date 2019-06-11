@@ -6,11 +6,6 @@ rosloginfo(bb)
 '''
 import rospy
 from std_msgs.msg import Bool
-import sys
-import json
-import socket
-from adhoc_findP import sendObject
-import time
 
 '''
 class testing(object):
@@ -49,17 +44,7 @@ class act():
 		# save latest info
 		self.act_bool = data.data
 	def print_act(self):
-		#rospy.loginfo("Drawing Attention") # ROS - robot communication
-		_send_texttospeech_object = {
-		"id" : int(time.time()),
-		"cmd" : "TextToSpeechCommand", #Command name
-		"priority" : 1,#, Priority, type int
-    	"text" : "Look over here"
-		}
-
-		sendObject(_send_texttospeech_object)
-
-		
+		rospy.loginfo("Drawing Attention")
 
 if __name__ == "__main__":
     rospy.init_node('drawAttention')
@@ -70,8 +55,7 @@ if __name__ == "__main__":
     rospy.Subscriber('/adhoc/outputs/drawAttention', Bool, callback=a.callback)
 
     while not rospy.is_shutdown():
-        if 1:#(a.act_bool):
+        if a.act_bool:
 			a.print_act()
-			time.sleep(3)
         rate.sleep()
 

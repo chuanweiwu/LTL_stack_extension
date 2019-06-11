@@ -16,7 +16,8 @@ class testing(object):
 		self.flag=False
 		self.data=False
 		rospy.Subscriber('/adhoc/inputs/respondR', Bool, self.callback)
-		self.pub = rospy.Publisher('/adhoc/inputs/flagRespond', Bool, queue_size=10)
+		#self.pub = rospy.Publisher('/adhoc/inputs/flagRespond', Bool, queue_size=10)
+		self.pub = rospy.Publisher('/adhoc/outputs/flagRespond', Bool, queue_size=10)
 		self.rate = rospy.Rate(10) # 10hz
 	def callback(self,data):
 		self.data=self.data or data.data

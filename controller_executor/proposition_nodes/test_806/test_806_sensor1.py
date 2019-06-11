@@ -13,7 +13,7 @@ class sensor1(object):
         self.name=0
         self.xyzpos=0
         rospy.Subscriber("tag_detections", AprilTagDetectionArray, self.callback)
-	self.pub = rospy.Publisher('/test_806/inputs/sensor1', Bool, queue_size=10)
+        self.pub = rospy.Publisher('/test_806/inputs/sensor1', Bool, queue_size=10)
         self.rate = rospy.Rate(10) # 10hz
     def callback(self,AprilTagDetectionArray):
         if AprilTagDetectionArray.detections:

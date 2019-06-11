@@ -12,7 +12,6 @@ import Image
 import geometry_msgs.msg
 
 class GoForwardAvoid():
-	_map_occpy_grid = nav_msgs.msg.OccupancyGrid()
 	def __init__(self):
 		#rospy.init_node('nav_test', anonymous=False)
 		self.controller_request_bool = False

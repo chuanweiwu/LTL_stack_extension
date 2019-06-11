@@ -20,7 +20,7 @@ class ViconTracker(object):
 	robot_Zz = 0
 
 	def __init__(self, SpheroNumber):
-		self.target_robot = 'vicon/HSIbot/HSIbot'
+		self.target_robot = 'vicon/jackal3NEW/jackal3NEW'
 		self.robot_x = 0
 		self.robot_y = 0
 		self.robot_z = 0
@@ -60,4 +60,3 @@ if __name__ == "__main__":
 	time.sleep(1)
 	while not rospy.is_shutdown():
 		pub.publish(a.calc()==1)
-		#time.sleep()

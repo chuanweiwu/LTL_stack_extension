@@ -49,12 +49,12 @@ class ViconTracker(object):
 
 	def getPose(self, cached=False):
 		self.updatePose_person()
+		print ('personAngle   ' + str(self.person_z))
 		return array([self.person_x, self.person_y, self.person_z])
 
 	def calc(self):
 		result=0
 		data = self.getPose()
-		print (data)
 		if (data[1]>0):
 			result=1
 		return result
@@ -64,8 +64,6 @@ if __name__ == "__main__":
 	pub = rospy.Publisher('/adhoc/inputs/PNext', Bool, queue_size=10)
 	rate = rospy.Rate(10)
 	a = ViconTracker()
-	
+	time.sleep(1)
 	while not rospy.is_shutdown():
 		pub.publish(a.calc()==1)
-	
-		#time.sleep(0.2)
